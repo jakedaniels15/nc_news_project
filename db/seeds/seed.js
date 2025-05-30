@@ -9,6 +9,7 @@ const seed = ({ topicData, userData, articleData, commentData }) => {
     .then(() => db.query(`DROP TABLE IF EXISTS articles`))
     .then(() => db.query(`DROP TABLE IF EXISTS users`))
     .then(() => db.query(`DROP TABLE IF EXISTS topics`))
+    
 
     // CREATE TABLES
     .then(() => db.query(`
@@ -84,7 +85,7 @@ const seed = ({ topicData, userData, articleData, commentData }) => {
     // INSERT COMMENTS DATA
     .then(({ rows }) => {
       const articleLookup = createLookupObject(rows, 'title', 'article_id');
-      console.log(rows)
+      
       const formattedCommentsData = commentData.map(({ article_title, body, votes, author, created_at }) => {
         const formattedDate = new Date(created_at);
         const article_id = articleLookup[article_title];
