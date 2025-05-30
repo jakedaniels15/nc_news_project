@@ -6,12 +6,22 @@ const { commentData } = require("../data/test-data")
 const seed = ({ topicData, userData, articleData, commentData }) => {
   // DROP TABLES IN REVERSE ORDER
   return db.query(`DROP TABLE IF EXISTS comments`)
+    .then(() => db.query(`DROP TABLE IF EXISTS articles_reacted_to`))
     .then(() => db.query(`DROP TABLE IF EXISTS articles`))
+    .then(() => db.query(`DROP TABLE IF EXISTS topics_followed`))
     .then(() => db.query(`DROP TABLE IF EXISTS users`))
     .then(() => db.query(`DROP TABLE IF EXISTS topics`))
+    .then(() => db.query(`DROP TABLE IF EXISTS emojis`))
+
     
 
     // CREATE TABLES
+    .then(() => db.query(`
+      CREATE TABLE emojis (
+      emoji_id SERIAL PRIMARY KEY,
+      emoji VARCHAR(5),
+      emoji_name VARCHAR(20)
+      )`))
     .then(() => db.query(`
       CREATE TABLE topics (
         description VARCHAR(100) NOT NULL,
@@ -25,6 +35,12 @@ const seed = ({ topicData, userData, articleData, commentData }) => {
         avatar_url VARCHAR(1000)
       )`))
     .then(() => db.query(`
+      CREATE TABLE topics_followed(
+      user_topic_id SERIAL PRIMARY KEY,
+      username VARCHAR(100) REFERENCES users(username),
+      topic VARCHAR(100) REFERENCES topics(slug)
+      )`))
+    .then(() => db.query(`
       CREATE TABLE articles (
         article_id SERIAL PRIMARY KEY,
         title VARCHAR(200) NOT NULL,
@@ -34,6 +50,13 @@ const seed = ({ topicData, userData, articleData, commentData }) => {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         votes INT DEFAULT 0,
         article_img_url VARCHAR(1000)
+      )`))
+    .then(() => db.query(`
+      CREATE TABLE articles_reacted_to (
+      emoji_article_user_id SERIAL PRIMARY KEY,
+      emoji_id INT REFERENCES emojis(emoji_id),
+      username VARCHAR(100) REFERENCES users(username),
+      article_id INT REFERENCES articles(article_id)
       )`))
     .then(() => db.query(`
       CREATE TABLE comments (

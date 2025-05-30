@@ -1,4 +1,4 @@
-modules.exports = [
+module.exports = [
 {
 emoji_id : 1,
 username : 'lurker',
