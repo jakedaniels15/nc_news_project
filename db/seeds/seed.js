@@ -67,9 +67,20 @@ const seed = ({ topicData, userData, articleData, commentData }) => {
         author VARCHAR(100) NOT NULL REFERENCES users(username) ON DELETE CASCADE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )`))
+    // INSERT EMOJI DATA
+    .then(() => {
+      const formattedEmojiData = emojiData.map(({emoji, emoji_name}) => {
+        return [emoji, emoji_name];
+      });
+      const sqlString = format(
+        `INSERT INTO emojis(emoji, emoji_name) VALUES %L RETURNING *`,
+        formattedEmojiData
+      );
+      return db.query(sqlString);
+    })
 
     // INSERT TOPIC DATA
-    .then(() => {
+    .then(({ rows: emojiRows }) => {
       const formattedTopicData = topicData.map(({ description, slug, img_url }) => {
         return [description, slug, img_url];
       });
@@ -77,11 +88,13 @@ const seed = ({ topicData, userData, articleData, commentData }) => {
         `INSERT INTO topics(description, slug, img_url) VALUES %L RETURNING *`,
         formattedTopicData
       );
-      return db.query(sqlString);
+      return db.query(sqlString).then(({ rows: topicRows }) =>{
+        return {emojiRows, topicRows}
+      });
     })
 
     // INSERT USERS DATA
-    .then(() => {
+    .then(({ emojiRows, topicRows }) => {
       const formattedUsersData = userData.map(({ username, name, avatar_url }) => {
         return [username, name, avatar_url];
       });
@@ -89,11 +102,26 @@ const seed = ({ topicData, userData, articleData, commentData }) => {
         `INSERT INTO users(username, name, avatar_url) VALUES %L RETURNING *`,
         formattedUsersData
       );
-      return db.query(sqlString);
+      return db.query(sqlString).then(({rows : userRows}) => {
+         return { emojiRows, topicRows, userRows }
+      });
+    })
+    // INSERT TOPICS FOLLOWED DATA
+    .then(({ emojiRows, topicRows, userRows }) => {
+        const formattedFollowedTopicsData = followedTopicsData.map(({username, topic}) => {
+        return [username, topic];
+      });
+      const sqlString = format(
+        `INSERT INTO topics_followed(username, topic) VALUES %L RETURNING *`,
+        formattedFollowedTopicsData
+      );
+      return db.query(sqlString).then(() => {
+        return { emojiRows, topicRows, userRows }
+      });
     })
 
     // INSERT ARTICLES DATA
-    .then(() => {
+    .then(({ emojiRows, topicRows, userRows }) => {
       const formattedArticlesData = articleData.map(({ title, topic, author, body, created_at, votes, article_img_url }) => {
         const formattedDate = new Date(created_at);
         return [title, topic, author, body, formattedDate, votes, article_img_url];
@@ -102,12 +130,31 @@ const seed = ({ topicData, userData, articleData, commentData }) => {
         `INSERT INTO articles(title, topic, author, body, created_at, votes, article_img_url) VALUES %L RETURNING *`,
         formattedArticlesData
       );
-      return db.query(sqlString);
+      return db.query(sqlString).then(({rows : articleRows}) => {
+        return { emojiRows, topicRows, userRows, articleRows }
+      });
+    })
+    // INSERT ARTICLES_REACTED_TO DATA
+    .then(({ emojiRows, topicRows, userRows, articleRows }) => {
+      const emojiLookupObj = createLookupObject(emojiRows, 'emoji', 'emoji_id')
+      const articleLookupObj = createLookupObject(articleRows, 'title', 'article_id')
+
+      const formattedArticlesReactedToData = articlesUserHasReactedToData.map(({emoji, username, article_title}) => {
+        const emoji_id = emojiLookupObj[emoji]
+        const article_id = articleLookupObj[article_title]
+        return [emoji_id, username, article_id]
+      })
+
+      const sqlString = format(`INSERT INTO articles_reacted_to(emoji_id, username, article_id) VALUES %L RETURNING *`, formattedArticlesReactedToData
+      )
+      return db.query(sqlString).then(() =>{
+        return { emojiRows, topicRows, userRows, articleRows }
+      })
     })
 
     // INSERT COMMENTS DATA
-    .then(({ rows }) => {
-      const articleLookup = createLookupObject(rows, 'title', 'article_id');
+    .then(({ emojiRows, topicRows, userRows, articleRows }) => {
+      const articleLookup = createLookupObject(articleRows, 'title', 'article_id');
       
       const formattedCommentsData = commentData.map(({ article_title, body, votes, author, created_at }) => {
         const formattedDate = new Date(created_at);
