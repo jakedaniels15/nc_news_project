@@ -1,6 +1,5 @@
-const {
-  convertTimestampToDate
-} = require("../db/seeds/utils");
+const {convertTimestampToDate, createLookupObject} = require('../db/seeds/utils');
+
 
 describe("convertTimestampToDate", () => {
   test("returns a new object", () => {
@@ -31,10 +30,17 @@ describe("convertTimestampToDate", () => {
     expect(result.key2).toBe(1);
   });
   test("returns unchanged object if no created_at property", () => {
+    //arrange
     const input = { key: "value" };
+    //act
     const result = convertTimestampToDate(input);
     const expected = { key: "value" };
+    //assert
     expect(result).toEqual(expected);
   });
 });
+
+describe('formatCommentData function', () => {
+// No idea how to test this function
+})
 
