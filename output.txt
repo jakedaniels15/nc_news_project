@@ -447,14 +447,14 @@
 
  emoji_article_user_id | emoji_id |   username    | article_id 
 -----------------------+----------+---------------+------------
-                     1 |          | lurker        |           
-                     2 |          | rogersop      |           
-                     3 |          | butter_bridge |           
-                     4 |          | lurker        |           
-                     5 |          | rogersop      |           
-                     6 |          | butter_bridge |           
-                     7 |          | lurker        |           
-                     8 |          | butter_bridge |           
-                     9 |          | rogersop      |           
+                     1 |        1 | lurker        |          1
+                     2 |        3 | rogersop      |          1
+                     3 |        5 | butter_bridge |          1
+                     4 |        3 | lurker        |          2
+                     5 |        1 | rogersop      |          2
+                     6 |        4 | butter_bridge |          2
+                     7 |        6 | lurker        |          3
+                     8 |        4 | butter_bridge |          3
+                     9 |        2 | rogersop      |          3
 (9 rows)
 

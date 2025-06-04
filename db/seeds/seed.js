@@ -14,12 +14,12 @@ const {
 const seed = ({ topicData, userData, articleData, commentData }) => {
   // DROP TABLES IN REVERSE ORDER
   return db.query(`DROP TABLE IF EXISTS comments`)
-    .then(() => db.query(`DROP TABLE IF EXISTS articles_reacted_to CASCADE`))
-    .then(() => db.query(`DROP TABLE IF EXISTS articles CASCADE`))
-    .then(() => db.query(`DROP TABLE IF EXISTS topics_followed CASCADE`))
-    .then(() => db.query(`DROP TABLE IF EXISTS users CASCADE`))
-    .then(() => db.query(`DROP TABLE IF EXISTS topics CASCADE`))
-    .then(() => db.query(`DROP TABLE IF EXISTS emojis CASCADE`))
+    .then(() => db.query(`DROP TABLE IF EXISTS articles_reacted_to `))
+    .then(() => db.query(`DROP TABLE IF EXISTS articles `))
+    .then(() => db.query(`DROP TABLE IF EXISTS topics_followed `))
+    .then(() => db.query(`DROP TABLE IF EXISTS users `))
+    .then(() => db.query(`DROP TABLE IF EXISTS topics `))
+    .then(() => db.query(`DROP TABLE IF EXISTS emojis`))
 
     
 
@@ -128,7 +128,6 @@ const seed = ({ topicData, userData, articleData, commentData }) => {
       );
       
       return db.query(sqlString).then(({rows}) => {
-         console.log('Inserted topics_followed:', rows.length);
         return { emojiRows, topicRows, userRows }
       });
     })
@@ -153,18 +152,21 @@ const seed = ({ topicData, userData, articleData, commentData }) => {
     })
     // INSERT ARTICLES_REACTED_TO DATA
     .then(({ emojiRows, topicRows, userRows, articleRows }) => {
-      const emojiLookupObj = createLookupObject(emojiRows, 'emoji', 'emoji_id')
-      const articleLookupObj = createLookupObject(articleRows, 'title', 'article_id')
+      // const emojiLookupObj = createLookupObject(emojiRows, 'emoji', 'emoji_id')
+      // const articleLookupObj = createLookupObject(articleRows, 'title', 'article_id')
 
-      const formattedArticlesReactedToData = articlesUserHasReactedToData.map(({emoji, username, article_title}) => {
-        const emoji_id = emojiLookupObj[emoji]
-        const article_id = articleLookupObj[article_title]
+  
+      const formattedArticlesReactedToData = articlesUserHasReactedToData.map(({emoji_id, username, article_id}) => {
+        // const emoji_id = emojiLookupObj[emoji]
+        // const article_id = articleLookupObj[article_title]
         return [emoji_id, username, article_id]
       })
 
       const sqlString = format(`INSERT INTO articles_reacted_to(emoji_id, username, article_id) VALUES %L RETURNING *`, formattedArticlesReactedToData
       )
+ 
       return db.query(sqlString).then(() =>{
+
         return { emojiRows, topicRows, userRows, articleRows }
       })
     })
