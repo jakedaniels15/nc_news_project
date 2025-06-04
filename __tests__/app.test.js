@@ -92,7 +92,6 @@ describe("GET /api/articles/:article_id", () => {
         .get("/api/articles/1")
         .expect(200)
         .then(({body}) =>{
-        
           expect(body).toHaveProperty('article')
           const article = body.article
           expect(article).toHaveProperty("author")
@@ -113,6 +112,32 @@ describe("GET /api/articles/:article_id", () => {
    test(`Returns a 400 error when an invalid article_id is provided`, () => {
     return request(app)
         .get("/api/articles/jake")
+        .expect(400)  
+  })
+})
+
+describe('GET /api/articles/:article_id/comments', () => {
+  test(`Returns an object with the key of comments, whose value
+       is an array of nested objects, each with the properties of:
+       comment_id, votes, created_at, author, body, article_id`, () => {
+        return request(app)
+        .get("/api/articles/1/comments")
+        .expect(200)
+        .then(({body}) => {
+          expect(body).toHaveProperty('comments')
+          body.comments.forEach((comment) => {
+            expect(comment).toHaveProperty("comment_id")
+            expect(comment).toHaveProperty("votes")
+            expect(comment).toHaveProperty("created_at")
+            expect(comment).toHaveProperty("author")
+            expect(comment).toHaveProperty("body")
+            expect(comment).toHaveProperty("article_id")
+          })
+        })
+       })
+   test(`Returns a 400 error when an invalid article_id is provided`, () => {
+    return request(app)
+        .get("/api/articles/jake/comments")
         .expect(400)  
   })
 })

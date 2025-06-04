@@ -44,4 +44,11 @@ function fetchArticleId(id){
     })
 }
 
-module.exports = {fetchTopics, fetchArticles, fetchUsers, fetchArticleId}
+function fetchArticleComments(id){
+    return db.query(`SELECT * FROM comments
+                    WHERE article_id = $1`, [id]).then(({rows}) =>{
+        return rows
+    })
+}
+
+module.exports = {fetchTopics, fetchArticles, fetchUsers, fetchArticleId, fetchArticleComments}

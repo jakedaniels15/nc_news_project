@@ -1,5 +1,5 @@
 const db = require('../db/connection')
-const {fetchTopics, fetchArticles, fetchUsers, fetchArticleId} = require('../models/models')
+const {fetchTopics, fetchArticles, fetchUsers, fetchArticleId, fetchArticleComments} = require('../models/models')
 
 function getTopics(req, res, next){
     fetchTopics().then((topics) => {
@@ -44,5 +44,18 @@ if(isNaN(id)){
   })
 }
 
+function getArticleComments(req, res, next){
+        const id = Number(req.params.article_id)
+    if(isNaN(id)){
+        return res.status(400).send({msg: "Invalid article_id"})
+    }
+    fetchArticleComments(id).then((comments) => {
+        res.status(200).send({comments})
+    })
+     .catch((err) => {
+    next(err)
+    })
+}
 
-module.exports = {getTopics, getArticles, getUsers, getArticleId}
+
+module.exports = {getTopics, getArticles, getUsers, getArticleId, getArticleComments}

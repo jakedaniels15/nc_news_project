@@ -1,7 +1,7 @@
 const db = require('./db/connection')
 const express = require("express");
 const app = express();
-const {getTopics, getArticles, getUsers, getArticleId} = require('./controllers/controllers')
+const {getTopics, getArticles, getUsers, getArticleId, getArticleComments} = require('./controllers/controllers')
 
 
 app.use(express.json())
@@ -14,7 +14,7 @@ app.get("/api/users", getUsers)
 
 app.get("/api/articles/:article_id", getArticleId)
 
-
+app.get("/api/articles/:article_id/comments", getArticleComments)
 
 app.use((err, req, res, next) => {
   console.log(err);
