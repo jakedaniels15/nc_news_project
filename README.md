@@ -12,3 +12,7 @@ PGDATABASE=nc_news_test   // The names of the databases can be found in the setu
 Step 3: Within env.development, enter the following code:
 
 PGDATABASE=nc_news
+
+
+
+

@@ -1,17 +1,25 @@
 const db = require("../connection")
 const format = require('pg-format')
 const {convertTimestampToDate, createLookupObject} = require('../seeds/utils');
-const { commentData } = require("../data/test-data")
+const {
+  articleData,
+  commentData,
+  topicData,
+  userData,
+  emojiData,
+  followedTopicsData,
+  articlesUserHasReactedToData
+} = require('../data/development-data');
 
 const seed = ({ topicData, userData, articleData, commentData }) => {
   // DROP TABLES IN REVERSE ORDER
   return db.query(`DROP TABLE IF EXISTS comments`)
-    .then(() => db.query(`DROP TABLE IF EXISTS articles_reacted_to`))
-    .then(() => db.query(`DROP TABLE IF EXISTS articles`))
-    .then(() => db.query(`DROP TABLE IF EXISTS topics_followed`))
-    .then(() => db.query(`DROP TABLE IF EXISTS users`))
-    .then(() => db.query(`DROP TABLE IF EXISTS topics`))
-    .then(() => db.query(`DROP TABLE IF EXISTS emojis`))
+    .then(() => db.query(`DROP TABLE IF EXISTS articles_reacted_to CASCADE`))
+    .then(() => db.query(`DROP TABLE IF EXISTS articles CASCADE`))
+    .then(() => db.query(`DROP TABLE IF EXISTS topics_followed CASCADE`))
+    .then(() => db.query(`DROP TABLE IF EXISTS users CASCADE`))
+    .then(() => db.query(`DROP TABLE IF EXISTS topics CASCADE`))
+    .then(() => db.query(`DROP TABLE IF EXISTS emojis CASCADE`))
 
     
 
@@ -95,6 +103,7 @@ const seed = ({ topicData, userData, articleData, commentData }) => {
 
     // INSERT USERS DATA
     .then(({ emojiRows, topicRows }) => {
+
       const formattedUsersData = userData.map(({ username, name, avatar_url }) => {
         return [username, name, avatar_url];
       });
@@ -103,33 +112,41 @@ const seed = ({ topicData, userData, articleData, commentData }) => {
         formattedUsersData
       );
       return db.query(sqlString).then(({rows : userRows}) => {
+        
          return { emojiRows, topicRows, userRows }
       });
     })
     // INSERT TOPICS FOLLOWED DATA
     .then(({ emojiRows, topicRows, userRows }) => {
         const formattedFollowedTopicsData = followedTopicsData.map(({username, topic}) => {
+          
         return [username, topic];
       });
       const sqlString = format(
         `INSERT INTO topics_followed(username, topic) VALUES %L RETURNING *`,
         formattedFollowedTopicsData
       );
-      return db.query(sqlString).then(() => {
+      
+      return db.query(sqlString).then(({rows}) => {
+         console.log('Inserted topics_followed:', rows.length);
         return { emojiRows, topicRows, userRows }
       });
     })
 
     // INSERT ARTICLES DATA
+    
     .then(({ emojiRows, topicRows, userRows }) => {
       const formattedArticlesData = articleData.map(({ title, topic, author, body, created_at, votes, article_img_url }) => {
         const formattedDate = new Date(created_at);
         return [title, topic, author, body, formattedDate, votes, article_img_url];
       });
+        
+
       const sqlString = format(
         `INSERT INTO articles(title, topic, author, body, created_at, votes, article_img_url) VALUES %L RETURNING *`,
         formattedArticlesData
       );
+      
       return db.query(sqlString).then(({rows : articleRows}) => {
         return { emojiRows, topicRows, userRows, articleRows }
       });

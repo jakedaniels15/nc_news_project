@@ -12,4 +12,19 @@ module.exports = [
     img_url:
       "https://images.pexels.com/photos/33242/cooking-ingredient-cuisine-kitchen.jpg?w=700&h=700",
   },
+    {
+    description: 'The man, the Mitch, the legend',
+    slug: 'mitch',
+    img_url: ""
+  },
+  {
+    description: 'Not dogs',
+    slug: 'cats',
+    img_url: ""
+  },
+  {
+    description: 'what books are made of',
+    slug: 'paper',
+    img_url: ""
+  }
 ];
