@@ -78,5 +78,30 @@
         }
       ]
     }
+  },
+
+  "POST /api/articles/:article_id/comments" : {
+    "description" : "adds a comment to a given article",
+    "example response":{
+      "username": "jake",
+      "body" : "example body"
+    }
+  },
+
+  "PATCH /api/articles/:article_id" : {
+    "description" : "updates the votes on an article",
+    "example response" :{
+      "title": "example topic",
+        "topic" :"example topic",
+        "author": "example username",
+        "body" :"example body",
+        "created_at" :"0123344545",
+        "votes" : 17,
+        "article_img_url" :"examplelink.com"
+    }
+  },
+  "DELETE /api/comments/:comment_id" :{
+    "description" : "deletes the given comment by comment_id",
+    "example response" : "status 204 - and no content"
   }
 }

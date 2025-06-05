@@ -10,7 +10,21 @@ function fetchTopics(id){
     })
 }
 
-function fetchArticles(id){
+function fetchArticles(sort_by = 'created_at', order = 'desc'){
+    const columnsCanSort = [ 'author', 'title', 'article_id',
+                            'topic', 'created_at', 'votes',
+                            'article_img_url', 'comment_count'];
+    
+    const orders = ['asc', 'desc'];
+
+    if(!columnsCanSort.includes(sort_by)){
+        return Promise.reject({status: 400, msg: 'Invalid sort_by column'})
+    }
+
+    if(!orders.includes(order.toLowerCase())){
+        return Promise.reject({status: 400, msg: 'Invalid order query'})
+    }
+
     return db.query(`
     SELECT 
       articles.author,
@@ -24,8 +38,7 @@ function fetchArticles(id){
     FROM articles
     LEFT JOIN comments ON articles.article_id = comments.article_id
     GROUP BY articles.article_id
-    ORDER BY articles.created_at DESC;
-  `)
+    ORDER BY ${sort_by} ${order.toUpperCase()}`,)
     .then(({rows}) => {
         return rows
     })
@@ -51,4 +64,46 @@ function fetchArticleComments(id){
     })
 }
 
-module.exports = {fetchTopics, fetchArticles, fetchUsers, fetchArticleId, fetchArticleComments}
+function insertArticleComment(article_id, author, body){
+    return db.query(`INSERT INTO comments
+                    (article_id, author, body)
+                    VALUES
+                    ($1, $2, $3)
+                    RETURNING *`, [article_id, author, body]).then(({rows}) => {
+        return rows[0]
+    })
+}
+
+function updateArticleVotes(article_id, inc_votes){
+    return db.query(`UPDATE articles SET votes = votes + $1
+                    WHERE article_id = $2
+                    RETURNING *`, [inc_votes, article_id])
+    .then(({rows}) => {
+        if(!rows.length){
+            return Promise.reject({status: 404, msg: "Article not found"})
+        }
+        return rows[0]
+    })
+}
+
+function deleteArticleComment(comment_id){
+    return db.query(`DELETE FROM comments
+                    WHERE comment_id = $1
+                    RETURNING *`, [comment_id]).then(({rows}) =>{
+             if(rows.length === 0){
+           return Promise.reject({status: 404, msg: "Comment not found"})
+        }  
+    return rows[0]
+    })
+}
+
+module.exports = {
+    fetchTopics,
+    fetchArticles,
+    fetchUsers,
+    fetchArticleId,
+    fetchArticleComments,
+    insertArticleComment,
+    updateArticleVotes,
+    deleteArticleComment
+    }

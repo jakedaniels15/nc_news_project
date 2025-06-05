@@ -1,31 +1,36 @@
 const db = require('../db/connection')
-const {fetchTopics, fetchArticles, fetchUsers, fetchArticleId, fetchArticleComments} = require('../models/models')
+const {
+    fetchTopics,
+    fetchArticles,
+    fetchUsers,
+    fetchArticleId,
+    fetchArticleComments,
+    insertArticleComment,
+    updateArticleVotes,
+    deleteArticleComment} = require('../models/models')
 
 function getTopics(req, res, next){
     fetchTopics().then((topics) => {
         res.status(200).send({topics})
     })
-    .catch((err) => {
-    next(err)
-  })
+    .catch(next)
 }
 
 function getArticles(req, res, next){
+
+    const { sort_by = "created_at", order = "desc"} = req.query
+
     fetchArticles().then((articles) =>{
         res.status(200).send({articles})
     })
-    .catch((err) => {
-    next(err)
-  })
+    .catch(next)
 }
 
 function getUsers(req, res, next){
     fetchUsers().then((users) => {
         res.status(200).send({users})
     })
-    .catch((err) => {
-    next(err)
-  })
+    .catch(next)
 }
 
 function getArticleId(req, res, next){
@@ -39,23 +44,75 @@ if(isNaN(id)){
         }
         res.status(200).send({article})
     })
-     .catch((err) => {
-    next(err)
-  })
+     .catch(next)
 }
 
 function getArticleComments(req, res, next){
         const id = Number(req.params.article_id)
     if(isNaN(id)){
-        return res.status(400).send({msg: "Invalid article_id"})
+        next({ status: 400, msg: "Invalid article_id" });
     }
     fetchArticleComments(id).then((comments) => {
         res.status(200).send({comments})
     })
-     .catch((err) => {
-    next(err)
-    })
+     .catch(next)
 }
 
 
-module.exports = {getTopics, getArticles, getUsers, getArticleId, getArticleComments}
+function postArticleComment(req, res, next){
+     const article_id = Number(req.params.article_id)
+     const {author, body} = req.body
+
+    if(isNaN(article_id)){
+        return next({ status: 400, msg: "Invalid article_id" });
+    }
+    if(!author || !body){
+        return next({status: 400, mesg: "Missing required fields"})
+    }
+    insertArticleComment(article_id, author, body).then((comment) => {
+        res.status(201).send({comment})
+    })
+    .catch(next)
+}
+
+function patchArticleVotes(req, res, next){
+    const article_id = Number(req.params.article_id)
+     const {inc_votes} = req.body
+
+       if(isNaN(article_id)){
+        return next({ status: 400, msg: "Invalid article_id" });
+    }
+
+        if(typeof inc_votes !== 'number'){
+            return res.status(400).send({msg : "Invalid vote increment"})
+        }
+
+    updateArticleVotes(article_id, inc_votes).then((updatedArticle) =>{
+        res.status(200).send({article : updatedArticle})
+    })
+    .catch(next)
+}
+
+function removeArticleComment(req, res, next){
+    const {comment_id} = req.params
+
+        if(isNaN(comment_id)){
+        return next({ status: 400, msg: "Invalid comment_id" });
+    }
+        deleteArticleComment(comment_id).then(() => {
+            res.status(204).send()
+        })
+    .catch(next)
+}
+
+
+
+module.exports = {
+    getTopics,
+    getArticles,
+    getUsers,
+    getArticleId,
+    getArticleComments,
+    postArticleComment,
+    patchArticleVotes,
+    removeArticleComment}

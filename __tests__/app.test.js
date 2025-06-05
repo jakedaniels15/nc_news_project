@@ -141,3 +141,74 @@ describe('GET /api/articles/:article_id/comments', () => {
         .expect(400)  
   })
 })
+
+describe("POST /api/articles/:article_id/comments", () => {
+  test(`Adds a comment to a given article`, () => {
+    return request(app)
+    .post("/api/articles/1/comments")
+    .send({ author: "butter_bridge", body: "Great article!" })
+    .expect(201)
+    .then(({body}) => {
+      expect(body.comment).toHaveProperty('article_id')
+      expect(body.comment).toHaveProperty('author')
+      expect(body.comment).toHaveProperty('body')
+    })
+  })
+   test(`Returns a 400 error when an invalid article_id is provided`, () => {
+    return request(app)
+        .post("/api/articles/jake/comments")
+        .send({ author: "butter_bridge", body: "Great article!" })
+        .expect(400)  
+  })
+   test(`Returns a 404 error when article_id provided is not found`, () => {
+    return request(app)
+        .post("/api/articles/150/comments")
+        .send({ author: "butter_bridge", body: "Great article!" })
+        .expect(404)  
+  })
+})
+
+describe("PATCH /api/articles/:article_id", () => {
+    test(`takes an object of votes to update the given article's vote count with`, () =>{ 
+      return request(app)
+        .patch("/api/articles/1")
+        .send({inc_votes: 5})
+        .expect(200)
+        .then(({body}) => {
+          expect(body.article.votes).toBe(5)
+        })
+    })
+    test(`Returns a 400 error when an invalid article_id is provided`, () => {
+    return request(app)
+        .patch("/api/articles/jake")
+        .send({inc_votes: 5})
+        .expect(400)  
+  })
+   test(`Returns a 404 error when article_id provided is not found`, () => {
+    return request(app)
+        .patch("/api/articles/150")
+        .send({inc_votes: 5})
+        .expect(404)  
+  })
+})
+
+describe("Deletes a comment from the comments table when provided with a comment_id", () => {
+  test("Responds with a status 204 and provides the deleted comment", () => {
+    return request(app)
+      .delete("/api/comments/1")
+      .expect(204)
+  })
+    test(`Returns a 400 error when an invalid comment_id is provided`, () => {
+    return request(app)
+        .delete("/api/comments/jake")
+        .expect(400)  
+  })
+   test(`Returns a 404 error when comment_id provided is not found`, () => {
+    return request(app)
+        .delete("/api/comments/15000")
+        .expect(404)  
+  })
+})
+
+
+
