@@ -10,22 +10,25 @@ function fetchTopics(id){
     })
 }
 
-function fetchArticles(sort_by = 'created_at', order = 'desc'){
-    const columnsCanSort = [ 'author', 'title', 'article_id',
-                            'topic', 'created_at', 'votes',
-                            'article_img_url', 'comment_count'];
-    
-    const orders = ['asc', 'desc'];
+function fetchArticles(sort_by = 'created_at', order = 'desc', topic) {
+  const columnsCanSort = ['author', 'title', 'article_id', 'topic', 'created_at', 'votes', 'article_img_url', 'comment_count'];
+  const orders = ['asc', 'desc'];
 
-    if(!columnsCanSort.includes(sort_by)){
-        return Promise.reject({status: 400, msg: 'Invalid sort_by column'})
-    }
+  if (!columnsCanSort.includes(sort_by)) {
+    return Promise.reject({ status: 400, msg: 'Invalid sort_by column' });
+  }
+  if (!orders.includes(order.toLowerCase())) {
+    return Promise.reject({ status: 400, msg: 'Invalid order query' });
+  }
 
-    if(!orders.includes(order.toLowerCase())){
-        return Promise.reject({status: 400, msg: 'Invalid order query'})
-    }
+  const queryValues = [];
+  let topicFilter = '';
+  if (topic) {
+    topicFilter = `WHERE articles.topic = $1`;
+    queryValues.push(topic);
+  }
 
-    return db.query(`
+  const queryStr = `
     SELECT 
       articles.author,
       articles.title,
@@ -37,11 +40,25 @@ function fetchArticles(sort_by = 'created_at', order = 'desc'){
       COUNT(comments.comment_id)::INT AS comment_count
     FROM articles
     LEFT JOIN comments ON articles.article_id = comments.article_id
+    ${topicFilter}
     GROUP BY articles.article_id
-    ORDER BY ${sort_by} ${order.toUpperCase()}`,)
-    .then(({rows}) => {
-        return rows
-    })
+    ORDER BY ${sort_by} ${order.toUpperCase()};`;
+
+  return db.query(queryStr, queryValues)
+    .then(({ rows }) => {
+      if (rows.length === 0 && topic) {
+        return db.query('SELECT * FROM topics WHERE slug = $1;', [topic])
+          .then(({ rows: topicRows }) => {
+            if (topicRows.length === 0) {
+              return Promise.reject({ status: 404, msg: 'Topic not found' });
+            } else {
+              
+              return [];
+            }
+          });
+      }
+      return rows;
+    });
 }
 
 function fetchUsers(id){
@@ -50,11 +67,21 @@ function fetchUsers(id){
     })
 }
 
-function fetchArticleId(id){
-    return db.query(`SELECT * FROM articles 
-                    WHERE article_id = $1`, [id]).then(({rows}) => {
-        return rows[0] || null
-    })
+function fetchArticleId(article_id) {
+  return db.query(
+      `SELECT articles.*, COUNT(comments.comment_id)::INT AS comment_count
+      FROM articles
+      LEFT JOIN comments ON comments.article_id = articles.article_id
+      WHERE articles.article_id = $1
+      GROUP BY articles.article_id;
+      `,[article_id])
+
+    .then(({ rows }) => {
+      if (rows.length === 0) {
+        return Promise.reject({ status: 404, msg: "Article not found" });
+      }
+      return rows[0];
+    });
 }
 
 function fetchArticleComments(id){
