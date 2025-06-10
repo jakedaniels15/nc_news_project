@@ -14,6 +14,21 @@ const {
 
 app.use(express.json())
 
+app.get("/api", (req, res) => {
+  res.json({
+    endpoints: {
+      topics: "/api/topics",
+      articles: "/api/articles",
+      users: "/api/users",
+      "get article by ID": "/api/articles/:article_id",
+      "get article comments": "/api/articles/:article_id/comments",
+      "post article comment": "/api/articles/:article_id/comments",
+      "patch article votes": "/api/articles/:article_id",
+      "delete article comment": "/api/comments/:comment_id"
+    }
+  });
+});
+
 app.get("/api/topics", getTopics)
 
 app.get("/api/articles", getArticles)
@@ -29,6 +44,8 @@ app.post("/api/articles/:article_id/comments", postArticleComment)
 app.patch("/api/articles/:article_id", patchArticleVotes)
 
 app.delete("/api/comments/:comment_id", removeArticleComment)
+
+
 
 
 app.use((err, req, res, next) => {
