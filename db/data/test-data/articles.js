@@ -51,7 +51,7 @@ module.exports = [
   },
   {
     title: "A",
-    topic: "mitch",
+    topic: "cats",
     author: "icellusedkars",
     body: "Delicious tin of cat food",
     created_at: 1602986400000,
@@ -81,7 +81,7 @@ module.exports = [
   },
   {
     title: "They're not exactly dogs, are they?",
-    topic: "mitch",
+    topic: "cats",
     author: "butter_bridge",
     body: "Well? Think about it.",
     created_at: 1591438200000,
@@ -101,7 +101,7 @@ module.exports = [
   },
   {
     title: "Am I a cat?",
-    topic: "mitch",
+    topic: "cats",
     author: "icellusedkars",
     body: "Having run out of ideas for articles, I am staring at the wall blankly, like a cat. Does this make me a cat?",
     created_at: 1579126860000,
@@ -111,7 +111,7 @@ module.exports = [
   },
   {
     title: "Moustache",
-    topic: "mitch",
+    topic: "paper",
     author: "butter_bridge",
     body: "Have you seen the size of that thing?",
     created_at: 1602419040000,
