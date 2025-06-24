@@ -67,7 +67,7 @@ function postArticleComment(req, res, next){
         return next({ status: 400, msg: "Invalid article_id" });
     }
     if(!author || !body){
-        return next({status: 400, mesg: "Missing required fields"})
+        return next({status: 400, msg: "Missing required fields"})
     }
     insertArticleComment(article_id, author, body).then((comment) => {
         res.status(201).send({comment})
